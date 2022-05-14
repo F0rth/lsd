@@ -12,6 +12,7 @@ import (
 var (
 	url, member_question, peasant_question string
 	splitLayoutPos                         float32 = 320
+	size                                   int32   = 10
 )
 
 func reset() {
@@ -55,11 +56,12 @@ func loop() {
 			g.Button("scrap!").OnClick(scrap),
 			g.Button("reset").OnClick(reset),
 		),
+		g.SliderInt(&size, 6, 40).Size(g.Auto),
 		g.SplitLayout(g.DirectionVertical, &splitLayoutPos,
 			// g.CodeEditor().Text(member_question).Border(true).ShowWhitespaces(false).TabSize(2),
 			// g.CodeEditor().Text(peasant_question).Border(true).ShowWhitespaces(false).TabSize(2),
-			g.InputTextMultiline(&member_question).Size(g.Auto, g.Auto),
-			g.InputTextMultiline(&peasant_question).Size(g.Auto, g.Auto),
+			g.Style().SetFontSize(float32(size)).To(g.InputTextMultiline(&member_question).Size(g.Auto, g.Auto)),
+			g.Style().SetFontSize(float32(size)).To(g.InputTextMultiline(&peasant_question).Size(g.Auto, g.Auto)),
 		),
 	)
 }
