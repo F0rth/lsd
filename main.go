@@ -10,14 +10,16 @@ import (
 )
 
 var (
-	url, member_question, peasant_question string
-	splitLayoutPos                         float32 = 320
-	size                                   int32   = 10
+	url              string
+	splitLayoutPos   float32 = 320
+	size             int32   = 10
+	pasta            bool    = false
+	editor1, editor2 *g.CodeEditorWidget
 )
 
 func reset() {
-	member_question = ""
-	peasant_question = ""
+	editor1.Text("")
+	editor2.Text("")
 }
 
 func scrap() {
@@ -39,34 +41,40 @@ func chat_download() {
 		line, _, _ := buf.ReadLine()
 		live := string(line)
 		if strings.Contains(live, "?") {
-			if strings.Contains(live, "Member") || strings.Contains(live, "New member") {
-				member_question += live + "\n"
+			if strings.Contains(live, "Member") || strings.Contains(live, "New member") || strings.Contains(live, "Moderator") {
+				editor1.InsertText(live + "\n")
 			} else {
-				peasant_question += live + "\n"
+				editor2.InsertText(live + "\n")
 			}
 		}
 	}
 }
 func loop() {
-
+	var split_direction g.SplitDirection
+	if pasta {
+		split_direction = g.DirectionHorizontal
+	} else {
+		split_direction = g.DirectionVertical
+	}
 	g.SingleWindow().Layout(
 		g.Row(
 			g.Label("url:"),
-			g.InputText(&url).Size(g.Auto-150),
+			g.InputText(&url).Size(g.Auto-300),
 			g.Button("scrap!").OnClick(scrap),
-			g.Button("reset").OnClick(reset),
+			g.Button("oh crap").OnClick(reset),
+			g.Checkbox("pasta", &pasta),
 		),
 		g.SliderInt(&size, 6, 40).Size(g.Auto),
-		g.SplitLayout(g.DirectionVertical, &splitLayoutPos,
-			// g.CodeEditor().Text(member_question).Border(true).ShowWhitespaces(false).TabSize(2),
-			// g.CodeEditor().Text(peasant_question).Border(true).ShowWhitespaces(false).TabSize(2),
-			g.Style().SetFontSize(float32(size)).To(g.InputTextMultiline(&member_question).Size(g.Auto, g.Auto)),
-			g.Style().SetFontSize(float32(size)).To(g.InputTextMultiline(&peasant_question).Size(g.Auto, g.Auto)),
+		g.SplitLayout(split_direction, &splitLayoutPos,
+			g.Style().SetFontSize(float32(size)).To(editor1),
+			g.Style().SetFontSize(float32(size)).To(editor2),
 		),
 	)
 }
 
 func main() {
+	editor1 = g.CodeEditor().Border(true).ShowWhitespaces(false).TabSize(2)
+	editor2 = g.CodeEditor().Border(true).ShowWhitespaces(false).TabSize(2)
 	wnd := g.NewMasterWindow("Live Shill Discriminator", 800, 800, g.MasterWindowFlagsFloating)
 	wnd.Run(loop)
 
